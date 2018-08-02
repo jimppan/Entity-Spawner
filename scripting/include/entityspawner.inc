@@ -64,6 +64,7 @@ public SharedPlugin __pl_entityspawner  =
 public __pl_entityspawner_SetNTVOptional()
 {	
 	MarkNativeAsOptional("ES_SpawnEntities");
+	MarkNativeAsOptional("ES_ClearEntities");
 	MarkNativeAsOptional("ES_IsSpawningOnRoundStart");
 	MarkNativeAsOptional("ES_IsRandomSpawnsEnabled");
 }
