@@ -3,7 +3,7 @@
 //#define DEBUG
 
 #define PLUGIN_AUTHOR "Rachnus"
-#define PLUGIN_VERSION "1.0"
+#define PLUGIN_VERSION "1.01"
 
 #include <sourcemod>
 #include <sdktools>
@@ -14,6 +14,8 @@
 #pragma newdecls required
 
 ConVar g_NavAreasRequired;
+ConVar g_SpawnLimit;
+
 KeyValues g_hRandomSpawns;
 
 int g_iEntityCount = 0;
@@ -34,7 +36,7 @@ Handle g_hOnEntitiesCleared;
 
 public Plugin myinfo = 
 {
-	name = "Entity Spawner CSGO v1.0",
+	name = "Entity Spawner CSGO v1.01",
 	author = PLUGIN_AUTHOR,
 	description = "Spawn entities at random points on the map (Nav Areas)",
 	version = PLUGIN_VERSION,
@@ -49,7 +51,7 @@ public void OnPluginStart()
 	HookEvent("round_start", Event_RoundStart, EventHookMode_Post);
 	
 	g_NavAreasRequired = 	CreateConVar("entityspawner_nav_areas_required", "50", "Amount of nav areas required for items to spawn");
-	
+	g_SpawnLimit = 			CreateConVar("entityspawner_spawn_limit", "1900", "Stop spawning entities once global entity count reaches this value");
 	g_hOnEntitiesSpawned =	CreateGlobalForward("ES_OnEntitiesSpawned", ET_Ignore, Param_Array, Param_Cell);
 	g_hOnEntitiesCleared =	CreateGlobalForward("ES_OnEntitiesCleared", ET_Ignore, Param_Cell);
 	
@@ -342,9 +344,12 @@ public int SpawnEntities()
 		
 		for (int i = 0; i < maxSpawns; i++)
 		{
+			if(GetEntityCount() >= g_SpawnLimit.IntValue)
+				break;
+			
 			float pos[3], vMins[3], vMaxs[3];
 			CNavArea navArea = NAU_GetNavAreaAddressByIndex(GetRandomInt(0, NAU_GetNavAreaCount() - 1));
-			
+
 			int entity = CreateEntityByName(className);
 			if(!IsValidEntity(entity))
 				SetFailState("Could not spawn \"%s\" in section \"%s\". Invalid entity.", className, section);
@@ -384,6 +389,9 @@ public int SpawnEntities()
 			if(entCount >= ES_MAX_ENTITIES)
 				break;
 		}
+		
+		if(GetEntityCount() >= g_SpawnLimit.IntValue)
+			break;
 		
 	} while (g_hRandomSpawns.GotoNextKey());
 	
